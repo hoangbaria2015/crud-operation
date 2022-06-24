@@ -27,7 +27,7 @@ public class BaseController<TEntity, TCreateUpdateDto, TGetForViewDto, TGetForEd
     }
 
     [HttpGet]
-    public virtual async Task<ActionResult<ICollection<TGetForViewDto>>> GetAll(TGetInput input)
+    public virtual async Task<ActionResult<ICollection<TGetForViewDto>>> GetAll([FromQuery]TGetInput input)
     {
         var entities = await Repository.GetAll();
 
