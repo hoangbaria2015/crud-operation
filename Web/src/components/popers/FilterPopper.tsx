@@ -3,7 +3,7 @@ import AddIcon from "@mui/icons-material/Add";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Popper from "@mui/material/Popper";
 import Fade from "@mui/material/Fade";
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import Paper from "@mui/material/Paper";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -13,7 +13,19 @@ import ListItemText from "@mui/material/ListItemText";
 import Checkbox from "@mui/material/Checkbox";
 import ListSubheader from "@mui/material/ListSubheader";
 
-const FilterPopper = () => {
+interface FilterPopperProps {
+  title: string;
+  items: { title: string; value: string }[];
+  checkedItems: string[];
+  setCheckedItems: Dispatch<SetStateAction<string[]>>;
+}
+
+const FilterPopper: React.FC<FilterPopperProps> = ({
+  title,
+  items,
+  checkedItems,
+  setCheckedItems,
+}) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -23,11 +35,9 @@ const FilterPopper = () => {
   const open = Boolean(anchorEl);
   const id = open ? "simple-popper" : undefined;
 
-  const [checked, setChecked] = React.useState([0]);
-
-  const handleToggle = (value: number) => () => {
-    const currentIndex = checked.indexOf(value);
-    const newChecked = [...checked];
+  const handleToggle = (value: string) => () => {
+    const currentIndex = checkedItems.indexOf(value);
+    const newChecked = [...checkedItems];
 
     if (currentIndex === -1) {
       newChecked.push(value);
@@ -35,7 +45,7 @@ const FilterPopper = () => {
       newChecked.splice(currentIndex, 1);
     }
 
-    setChecked(newChecked);
+    setCheckedItems(newChecked);
   };
 
   return (
@@ -69,33 +79,30 @@ const FilterPopper = () => {
                       fontSize: "14px",
                     }}
                   >
-                    Category
+                    {title}
                   </ListSubheader>
                 }
               >
-                {[0, 1, 2, 3].map((value) => {
-                  const labelId = `checkbox-list-label-${value}`;
+                {items.map((item) => {
+                  const labelId = `checkbox-list-label-${item.value}`;
 
                   return (
-                    <ListItem key={value} disablePadding>
+                    <ListItem key={item.value} disablePadding>
                       <ListItemButton
                         role={undefined}
-                        onClick={handleToggle(value)}
+                        onClick={handleToggle(item.value)}
                         dense
                       >
                         <ListItemIcon>
                           <Checkbox
                             edge="start"
-                            checked={checked.indexOf(value) !== -1}
+                            checked={checkedItems.indexOf(item.value) !== -1}
                             tabIndex={-1}
                             disableRipple
                             inputProps={{ "aria-labelledby": labelId }}
                           />
                         </ListItemIcon>
-                        <ListItemText
-                          id={labelId}
-                          primary={`Line item ${value + 1}`}
-                        />
+                        <ListItemText id={labelId} primary={item.title} />
                       </ListItemButton>
                     </ListItem>
                   );

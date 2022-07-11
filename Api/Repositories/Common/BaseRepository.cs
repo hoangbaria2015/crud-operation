@@ -1,5 +1,5 @@
+using System.Linq.Expressions;
 using Api.Contexts;
-using Api.Models;
 using Api.Models.Common;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,9 +14,27 @@ public class BaseRepository<TEntity> : IRepository<TEntity> where TEntity : Base
     {
         _context = context;
     }
-    public virtual async Task<ICollection<TEntity>> GetAll()
+
+    public virtual async Task<ICollection<TEntity>> GetAll(
+        ICollection<Expression<Func<TEntity, object>>> includes, 
+        Expression<Func<TEntity, bool>> filter = null
+        )
     {
-        return await Context.ToListAsync();
+        IQueryable<TEntity> query = Context;
+
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+
+        if (filter != null)
+        {
+            query = query.Where(filter);
+        }
+
+        var str = query.ToQueryString();
+
+        return await query.ToListAsync();
     }
 
     public virtual async Task<TEntity?> GetById(Guid id)
@@ -28,10 +46,10 @@ public class BaseRepository<TEntity> : IRepository<TEntity> where TEntity : Base
     {
         var result = await Context.AddAsync(entity);
         await SaveChangesAsync();
-        
+
         return result.Entity;
     }
-    
+
     public virtual async Task<TEntity> Update(TEntity entity)
     {
         var result = Context.Update(entity);
@@ -46,7 +64,7 @@ public class BaseRepository<TEntity> : IRepository<TEntity> where TEntity : Base
 
         if (entity != null)
             _context.Remove(entity);
-        
+
         await SaveChangesAsync();
     }
 

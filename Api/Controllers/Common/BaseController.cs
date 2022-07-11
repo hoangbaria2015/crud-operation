@@ -3,6 +3,7 @@ using Api.Models.Common;
 using Api.Repositories.Common;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq.Expressions;
 
 namespace Api.Controllers.Common;
 
@@ -26,10 +27,27 @@ public class BaseController<TEntity, TCreateUpdateDto, TGetForViewDto, TGetForEd
         _mapper = mapper;
     }
 
-    [HttpGet]
-    public virtual async Task<ActionResult<ICollection<TGetForViewDto>>> GetAll([FromQuery]TGetInput input)
+    protected virtual Expression<Func<TEntity, bool>> FilterGetAll(Expression<Func<TEntity, bool>> filter, TGetInput input)
     {
-        var entities = await Repository.GetAll();
+        return filter;
+    }
+    
+    protected virtual void IncludeGetAll(List<Expression<Func<TEntity, object>>> includes)
+    {
+        
+    }
+
+    [HttpGet]
+    public virtual async Task<ActionResult<ICollection<TGetForViewDto>>> GetAll([FromQuery] TGetInput input)
+    {
+        Expression<Func<TEntity, bool>> filter = x => true;
+        List<Expression<Func<TEntity, object>>> includes = new List<Expression<Func<TEntity, object>>>();
+
+        IncludeGetAll(includes);
+
+        filter = FilterGetAll(filter, input);
+
+        var entities = await Repository.GetAll(includes, filter);
 
         var result = Mapper.Map<ICollection<TEntity>, ICollection<TGetForViewDto>>(entities);
 

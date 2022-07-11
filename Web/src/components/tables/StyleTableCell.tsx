@@ -1,3 +1,4 @@
+import { TableRow } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import TableCell, { tableCellClasses } from "@mui/material/TableCell";
 
@@ -17,6 +18,12 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     fontWeight: 400,
     fontSize: "14px",
     lineHeight: "20px",
+  },
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  [`&.${tableCellClasses.body}`]: {
+    color: "#000000DE",
   },
 }));
 

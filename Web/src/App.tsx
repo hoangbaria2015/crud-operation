@@ -2,11 +2,13 @@ import "./App.css";
 import {
   Box,
   Button,
+  Chip,
   Container,
   createTheme,
   Grid,
   IconButton,
   Paper,
+  Stack,
   ThemeProvider,
   Typography,
 } from "@mui/material";
@@ -14,11 +16,19 @@ import SearchIcon from "@mui/icons-material/Search";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import AddIcon from "@mui/icons-material/Add";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import TaskTable from "./components/TaskTable";
+import TaskTable from "./components/tables/TaskTable";
 import { SearchTextField } from "./components/SearchTextField";
-import ResourceTable from "./components/ResourseTable";
-import FilterPopper from "./components/FilterPopper";
+import ResourceTable from "./components/tables/ResourseTable";
+import FilterPopper from "./components/popers/FilterPopper";
+import { useEffect, useState } from "react";
+import { CategoryDto, EmployeeDto, ImatisTaskDto } from "./shared/models";
+import { categoryService } from "./services/category.service";
+import { imatisTaskService } from "./services/imatis-task.service";
+import { employeeService } from "./services/employee.service";
+import CreateImatisTaskDialog from "./components/CreateImatisTaskDialog";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { DragPreviewImage, useDrag } from "react-dnd";
+import { DragItemTypes } from "./shared/constants";
 
 const theme = createTheme({
   components: {
@@ -68,8 +78,77 @@ const theme = createTheme({
 });
 
 function App() {
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  const [tasks, setTasks] = useState<ImatisTaskDto[]>([]);
+  const [bookers, setBookers] = useState<EmployeeDto[]>([]);
+  const [categories, setCategories] = useState<CategoryDto[]>([]);
+  const [checkedItems, setCheckedItems] = useState<string[]>([]);
+  const [task, setTask] = useState<ImatisTaskDto>({
+    categoryId: "",
+    from: "",
+    fromDetail: "",
+    to: "",
+    toDetail: "",
+    description: "",
+    instruction: "",
+    bookerId: "",
+  });
+
+  const [{ isDragging, canDrag }, drag, preview] = useDrag(() => ({
+    type: DragItemTypes.UnassignedTask,
+    item: { taskId: "task.id" },
+    collect: (monitor) => ({
+      isDragging: !!monitor.isDragging(),
+      canDrag: !!monitor.canDrag(),
+    }),
+  }));
+
+  useEffect(() => {
+    categoryService.getAll().then((data) => setCategories(data));
+  }, []);
+
+  useEffect(() => {
+    imatisTaskService.getAll().then((data) => setTasks(data));
+  }, []);
+
+  useEffect(() => {
+    employeeService.getAll().then((data) => setBookers(data));
+  }, []);
+
+  const handleCreateTask = () => {
+    imatisTaskService.save(task).then((res) => {
+      imatisTaskService.getAll().then((data) => setTasks(data));
+    });
+    setTask({
+      categoryId: "",
+      from: "",
+      fromDetail: "",
+      to: "",
+      toDetail: "",
+      description: "",
+      instruction: "",
+    });
+  };
+
+  const handleClick = () => {
+    console.info("You clicked the Chip.");
+  };
+
+  const handleDelete = () => {
+    console.info("You clicked the delete icon.");
+  };
+
   return (
     <ThemeProvider theme={theme}>
+      <CreateImatisTaskDialog
+        open={createTaskOpen}
+        setOpen={setCreateTaskOpen}
+        task={task}
+        setTask={setTask}
+        categories={categories}
+        bookers={bookers}
+        handleCreateTask={handleCreateTask}
+      />
       <Box
         component="main"
         sx={{
@@ -89,7 +168,11 @@ function App() {
             <Button variant="text" startIcon={<RefreshIcon />}>
               Recurring task templates
             </Button>
-            <Button variant="text" startIcon={<AddIcon />}>
+            <Button
+              variant="text"
+              startIcon={<AddIcon />}
+              onClick={() => setCreateTaskOpen(true)}
+            >
               New task
             </Button>
           </Grid>
@@ -98,7 +181,7 @@ function App() {
         <Grid container spacing={2} columns={10} height="98%">
           <Grid item xs={4}>
             <Paper elevation={3} sx={{ height: "100%" }}>
-              <Container maxWidth="lg" sx={{ marginBottom: 5 }}>
+              <Container maxWidth="lg" sx={{ marginBottom: 2 }}>
                 <Grid container spacing={2} height="100%">
                   <Grid item>
                     <Typography component="p" variant="subtitle2">
@@ -107,6 +190,17 @@ function App() {
                     <Typography component="p" variant="caption">
                       11 tasks
                     </Typography>
+                  </Grid>
+                  <Grid item>
+                    <Stack direction="row" spacing={1}>
+                      <Chip
+                        ref={drag}
+                        label="Deletable"
+                        variant="outlined"
+                        onDelete={handleDelete}
+                        deleteIcon={<DeleteIcon />}
+                      />
+                    </Stack>
                   </Grid>
                   <Grid
                     item
@@ -121,12 +215,24 @@ function App() {
                       id="input-with-icon-textfield"
                       placeholder="Search..."
                     />
-                    <FilterPopper />
+                    <FilterPopper
+                      title="Category"
+                      items={
+                        categories.map((category) => {
+                          return {
+                            title: category.name || "",
+                            value: category.id || "",
+                          };
+                        }) || []
+                      }
+                      checkedItems={checkedItems}
+                      setCheckedItems={setCheckedItems}
+                    />
                   </Grid>
                 </Grid>
               </Container>
 
-              <TaskTable />
+              <TaskTable data={tasks} />
             </Paper>
           </Grid>
           <Grid item xs={2}>
@@ -186,11 +292,21 @@ function App() {
                       id="input-with-icon-textfield"
                       placeholder="Search..."
                     />
-                    <FilterPopper />
+                    <FilterPopper
+                      title="Category"
+                      items={categories.map((category) => {
+                        return {
+                          title: category.name || "",
+                          value: category.id || "",
+                        };
+                      })}
+                      checkedItems={checkedItems}
+                      setCheckedItems={setCheckedItems}
+                    />
                   </Grid>
                 </Grid>
               </Container>
-              <TaskTable />
+              <TaskTable data={tasks} />
             </Paper>
           </Grid>
         </Grid>

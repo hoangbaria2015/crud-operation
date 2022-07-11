@@ -7,7 +7,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import StyledTableCell from "./StyleTableCell";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import IconButton from "@mui/material/IconButton";
-import CustomizedProgressBars from "./BorderLinearProgress";
+import ResourceRow from "./ResourceRow";
 
 function createData(
   name: string,
@@ -17,9 +17,10 @@ function createData(
   category: string,
   patientName: string,
   from: string,
-  to: string
+  to: string,
+  isBusy: boolean
 ) {
-  return { name, priority, time, content, category, patientName, from, to };
+  return { name, priority, time, content, category, patientName, from, to, isBusy };
 }
 
 const rows = [
@@ -31,7 +32,8 @@ const rows = [
     "Ola Nordman",
     "Pasient | Seng",
     "354 (1-seng) > infeksjonmed",
-    "Sengesentralen > Bygglokasjoner"
+    "Sengesentralen > Bygglokasjoner",
+    true
   ),
   createData(
     "Frozen yoghurt1",
@@ -41,7 +43,8 @@ const rows = [
     "Ola Nordman",
     "Pasient | Seng",
     "354 (1-seng) > infeksjonmed",
-    "Sengesentralen > Bygglokasjoner"
+    "Sengesentralen > Bygglokasjoner",
+    false
   ),
   createData(
     "Frozen yoghurt2",
@@ -51,7 +54,8 @@ const rows = [
     "Ola Nordman",
     "Pasient | Seng",
     "354 (1-seng) > infeksjonmed",
-    "Sengesentralen > Bygglokasjoner"
+    "Sengesentralen > Bygglokasjoner",
+    true
   ),
 ];
 
@@ -75,18 +79,12 @@ export default function ResourceTable() {
               {open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </IconButton>
           </StyledTableCell>
+          <StyledTableCell></StyledTableCell>
         </TableRow>
       </TableHead>
       <TableBody sx={{ display: open ? "table-row-group" : "none" }}>
         {rows.map((row) => (
-          <TableRow key={row.name}>
-            <StyledTableCell>
-              <CustomizedProgressBars value={2} total={6} />
-            </StyledTableCell>
-            <StyledTableCell>{row.time}</StyledTableCell>
-            <StyledTableCell>{row.content}</StyledTableCell>
-            <StyledTableCell>{row.category}</StyledTableCell>
-          </TableRow>
+          <ResourceRow key={row.name} item={row} />
         ))}
       </TableBody>
     </Table>

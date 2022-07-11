@@ -29,12 +29,21 @@ public class ImatisTask : BaseEntity
     [ForeignKey("AssignToId")]
     public Employee? AssignTo { get; set; }
     
+    [MaxLength(TaskConsts.DescriptionMaxLength)]
+    public string? Description { get; set; }
+    
+    [MaxLength(TaskConsts.InstructionMaxLength)]
+    public string? Instruction { get; set; }
+    
     [MaxLength(TaskConsts.FromMaxLength)]
     public string? From { get; set; }
+    
     [MaxLength(TaskConsts.FromDetailMaxLength)]
     public string? FromDetail { get; set; }
+    
     [MaxLength(TaskConsts.ToMaxLength)]
     public string? To { get; set; }
+    
     [MaxLength(TaskConsts.ToDetailMaxLength)]
     public string? ToDetail { get; set; }
 }

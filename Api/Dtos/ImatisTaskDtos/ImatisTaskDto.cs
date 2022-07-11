@@ -18,7 +18,12 @@ public class ImatisTaskDto : BaseDto
 
     public Guid? BookerId { get; set; }
     public Employee? Booker { get; set; }
-
+    
+    public Guid? AssignToId { get; set; }
+    public Employee? AssignTo { get; set; }
+    
+    public string? Description { get; set; }
+    public string? Instruction { get; set; }
     public string? From { get; set; }
     public string? FromDetail { get; set; }
     public string? To { get; set; }
@@ -27,4 +32,5 @@ public class ImatisTaskDto : BaseDto
 
 public class ImatisTaskViewDto : ImatisTaskDto
 {
+    public bool IsAssigned => AssignToId != null;
 }
